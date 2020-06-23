@@ -4,9 +4,10 @@ import functions
 
 if __name__ == '__main__':
 
-    # file = open("N4_list.txt", 'w')
-    # discovery_list = file.read()
+    file = open("N3//N3_list.txt", 'r+')
 
-
-    # functions.remove_empty_lines("N3//N3_list.txt")
-    pass
+    node_list = file.read()
+    file.seek(0)
+    file.truncate()
+    file.close()
+    print(node_list)
