@@ -12,30 +12,10 @@ def main():
     addr = (address, PORT)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind(addr)
-    print("[SERVER STARTS] Server is starting ...")
-
-    buf = 1024
-
-    data, addr = s.recvfrom(buf)
-    print(addr[0])
-    print(type(addr[0]))
-    data = data.decode(ENCODING)
-    print("Received File:", data)
-
-    f = open(data.strip(), 'wb')
-
-    data, addr = s.recvfrom(buf)
-    try:
-        while data:
-            f.write(data)
-            s.settimeout(2)
-            data, addr = s.recvfrom(buf)
-    except:
-        f.close()
-        s.close()
-        print("File Downloaded")
-
-
+    data, address2 = s.recvfrom(1024)
+    if data:
+        print("SERVER : client sent msg {}".format(data.decode(ENCODING)))
+        s.sendto(data, address2)
 
 
 if __name__ == '__main__':

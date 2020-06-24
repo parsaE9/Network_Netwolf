@@ -11,22 +11,13 @@ def send_file():
     address = socket.gethostbyname(socket.gethostname())
     buf = 1024
     addr = (address, PORT)
-
-    file_name = "N1//N1_list.txt"
-
-    s.sendto(file_name.encode(ENCODING), addr)
-
-    f = open(file_name, "rb")
-    data = f.read(buf)
-
-
-    while data:
-        if s.sendto(data, addr):
-
-            print("sending ...")
-            data = f.read(buf)
+    msg = "hi im client"
+    s.sendto(msg.encode(ENCODING), addr)
+    data, server = s.recvfrom(buf)
+    print("Client: I got msg back {}".format(data.decode(ENCODING)))
     s.close()
-    f.close()
+
+
 
 
 if __name__ == '__main__':

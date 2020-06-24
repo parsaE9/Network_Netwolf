@@ -12,7 +12,6 @@ def remove_empty_lines(file_name):
 
 
 def merge_discovery_msg(name, udp_port, data, address):
-
     # print("[UDP SERVER {} ] DATA : {} \t RECEIVED FROM : {}".format(name, data, address))
 
     name_index = data.replace(':', 'X', 1).find(':')
@@ -57,8 +56,10 @@ def print_node_list(name):
     delete_command_file()
     print(node_list)
 
+
 def delete_command_file():
     file = open("command.txt", "r+")
     file.seek(0)
     file.truncate()
     file.close()
+
