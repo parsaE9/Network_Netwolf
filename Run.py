@@ -5,7 +5,7 @@ import functions
 
 
 def create_object(name, udp_port):
-    netwolf.Netwolf(name, udp_port)
+    netwolf.NetWolf(name, udp_port)
 
 
 if __name__ == '__main__':
@@ -22,8 +22,8 @@ if __name__ == '__main__':
         time.sleep(1)
         print("\n*************************************************************"
               "\n- Commands: \"list\"\t  \"GET\"\n- Example:  \"N1 list\"\t  \"N2 GET sampleFile.txt\"\n- Commands Are Case Sensitive!")
-        user_input = input("- enter Command: ")
 
+        user_input = input("- enter Command: ")
         file = open("command.txt", "w")
         file.write(user_input)
         file.close()

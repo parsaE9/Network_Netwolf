@@ -6,23 +6,25 @@ import functions
 import os
 
 
-class Netwolf:
+class NetWolf:
+
     ENCODING = 'utf-8'
     peers_count = 0
+    timer_list = []
 
     def __init__(self, name, udp_port):
 
         self.address = socket.gethostbyname(socket.gethostname())
         self.name = name
         self.udp_port = udp_port
-        self.reply_list = []
+        self.response_list = []
 
-        Netwolf.peers_count += 1
+        NetWolf.peers_count += 1
 
         threading.Thread(target=self.UDP_server, args=()).start()
         time.sleep(0.25)
-        threading.Thread(target=self.discovery_client, args=()).start()
-        threading.Thread(target=self.GET_client, args=()).start()
+        threading.Thread(target=self.UDP_discovery_client, args=()).start()
+        threading.Thread(target=self.UDP_GET_client, args=()).start()
 
 
 
@@ -47,12 +49,15 @@ class Netwolf:
                 split_data = data.split(' ')
 
                 if split_data[1] in files_in_folder:
-                    msg = "UDP SERVER {} : I Got \"{}\"".format(self.name, split_data[1])
+                    index = len(NetWolf.timer_list) + 1
+                    start_time = time.time()
+                    NetWolf.timer_list.append(str(index) + " " + str(start_time))
+                    msg = "{} YES {}".format(self.name, str(index))
                     server.sendto(msg.encode(self.ENCODING), address)
 
 
 
-    def discovery_client(self):
+    def UDP_discovery_client(self):
 
         while True:
             file_name = self.name + "//" + self.name + "_list.txt"
@@ -62,7 +67,7 @@ class Netwolf:
             line_count = 0
             file.close()
 
-            for i in coList:
+            for _ in coList:
                 line_count += 1
 
             if discovery_list == '':
@@ -86,13 +91,13 @@ class Netwolf:
                     # print("UDP CLIENT {} SENT MESSAGE TO {}".format(self.name, port))
                     time.sleep(round(random.uniform(0.75, 1), 3))
 
-            if Netwolf.peers_count == line_count + 1:
+            if NetWolf.peers_count == line_count + 1:
                 time.sleep(4)
             else:
                 time.sleep(round(random.uniform(2, 2.5), 2))
 
 
-    def GET_client(self):
+    def UDP_GET_client(self):
 
         while True:
             time.sleep(round(random.uniform(1, 1.1), 3))
@@ -136,19 +141,41 @@ class Netwolf:
                 for t in thread_list:
                     t.join()
 
-                # TODO: implement TCP file sharing
+                if len(self.response_list) == 0:
+                    print("Could Not Find Requested File!")
+                else:
+                    print("Responses:")
+                    for i in self.response_list:
+                        print("\t" + i)
 
+
+                self.response_list.clear()
+                thread_list.clear()
                 functions.delete_command_file()
+
+                # TODO: implement TCP file sharing
 
 
     def client_receive_GET_response(self, client, msg, SERVER_INFORMATION):
         try:
             client.sendto(msg, SERVER_INFORMATION)
             client.settimeout(2)
-            reply, server = client.recvfrom(1024)
-            reply = reply.decode(Netwolf.ENCODING)
-            print("UDP CLIENT {}: RECEIVED REPLY \"{}\"".format(self.name, reply))
-            self.reply_list.append(reply)
+            response, server = client.recvfrom(1024)
+            stop_time = time.time()
+            start_time = 0
+            response = response.decode(NetWolf.ENCODING)
+            split_response = response.split(' ')
+            for i in NetWolf.timer_list:
+                split_i = i.split(' ')
+                if split_response[2] == split_i[0]:
+                    start_time = float(split_i[1])
+                    break
+            print("start time = {}".format(start_time))
+            print("stop  time = {}".format(stop_time))
+            print("delay      = {}".format(stop_time - start_time))
+
+            # print("UDP CLIENT {}: RECEIVED RESPONSE \"{}\"".format(self.name, response))
+            self.response_list.append(response)
         except socket.timeout:
-            print("UDP CLIENT {}: GOT NO REPLY".format(self.name))
+            # print("UDP CLIENT {}: GOT NO RESPONSE".format(self.name))
             client.close()
