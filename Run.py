@@ -21,9 +21,17 @@ if __name__ == '__main__':
     while True:
         time.sleep(1)
         print("\n*************************************************************"
-              "\n- Commands: \"list\"\t  \"GET\"\n- Example:  \"N1 list\"\t  \"N2 GET sampleFile.txt\"\n- Commands Are Case Sensitive!")
+              "\n- Commands: \"list\"\t     \"GET\"\n- Example:  \"N1 list\"\t \"N2 GET sampleFile.txt\"")
 
         user_input = input("- enter Command: ")
+        split_user_input = user_input.split(' ')
+        if split_user_input[1].lower() == 'list':
+            user_input = split_user_input[0].upper() + " " + split_user_input[1].lower()
+        elif split_user_input[1].upper() == 'GET':
+            user_input = split_user_input[0].upper() + " " + split_user_input[1].upper() + " " + split_user_input[2]
+        else:
+            print("- unknown Command! Try Again...")
+            continue
         file = open("command.txt", "w")
         file.write(user_input)
         file.close()

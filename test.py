@@ -10,15 +10,13 @@ if __name__ == '__main__':
 
     # file = open("N3//N3_list.txt", 'r+')
     # file.close()
-    begin = round(time.time(), 6)
-    time.sleep(2)
-    end = round(time.time(), 6)
-    msg = "hi"
-    print(begin)
-    print(end)
-    a = end - begin
-    print("difference = {}".format(a))
-    msg += str(a)
-    print(msg)
-    address = socket.gethostbyname(socket.gethostname())
-    print(address)
+    data = {}
+    data.update({"key1" : 85})
+    print(data)
+    data.update({"sex" : 22})
+    print(data.get("key1"))
+    print(data.get("sex"))
+    print(data.get("sexx"))
+    print(len(data))
+    for i in data:
+        print(data.get(i))

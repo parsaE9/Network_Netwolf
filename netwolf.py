@@ -10,7 +10,7 @@ class NetWolf:
 
     ENCODING = 'utf-8'
     peers_count = 0
-    timer_list = []
+    timer_dic = {}
 
     def __init__(self, name, udp_port):
 
@@ -49,9 +49,9 @@ class NetWolf:
                 split_data = data.split(' ')
 
                 if split_data[1] in files_in_folder:
-                    index = len(NetWolf.timer_list) + 1
+                    index = len(NetWolf.timer_dic) + 1
                     start_time = time.time()
-                    NetWolf.timer_list.append(str(index) + " " + str(start_time))
+                    NetWolf.timer_dic.update({str(index) : str(start_time)})
                     msg = "{} YES {}".format(self.name, str(index))
                     server.sendto(msg.encode(self.ENCODING), address)
 
@@ -92,7 +92,7 @@ class NetWolf:
                     time.sleep(round(random.uniform(0.75, 1), 3))
 
             if NetWolf.peers_count == line_count + 1:
-                time.sleep(4)
+                time.sleep(3)
             else:
                 time.sleep(round(random.uniform(2, 2.5), 2))
 
@@ -165,10 +165,9 @@ class NetWolf:
             start_time = 0
             response = response.decode(NetWolf.ENCODING)
             split_response = response.split(' ')
-            for i in NetWolf.timer_list:
-                split_i = i.split(' ')
-                if split_response[2] == split_i[0]:
-                    start_time = float(split_i[1])
+            for i in NetWolf.timer_dic:
+                if split_response[2] == i:
+                    start_time = float(NetWolf.timer_dic.get(i))
                     break
             print("start time = {}".format(start_time))
             print("stop  time = {}".format(stop_time))
