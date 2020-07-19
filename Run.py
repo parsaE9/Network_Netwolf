@@ -25,9 +25,9 @@ if __name__ == '__main__':
 
         user_input = input("- enter Command: ")
         split_user_input = user_input.split(' ')
-        if split_user_input[1].lower() == 'list':
+        if split_user_input[1].lower() == 'list' and len(split_user_input) == 2:
             user_input = split_user_input[0].upper() + " " + split_user_input[1].lower()
-        elif split_user_input[1].upper() == 'GET':
+        elif split_user_input[1].upper() == 'GET' and len(split_user_input) == 3:
             user_input = split_user_input[0].upper() + " " + split_user_input[1].upper() + " " + split_user_input[2]
         else:
             print("- unknown Command! Try Again...")
