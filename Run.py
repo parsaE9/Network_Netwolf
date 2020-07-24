@@ -23,6 +23,7 @@ if __name__ == '__main__':
         print("\n*************************************************************"
               "\n- Commands: \"list\"\t     \"GET\"\n- Example:  \"N1 list\"\t \"N2 GET sampleFile.txt\"")
 
+
         user_input = input("- enter Command: ")
         split_user_input = user_input.split(' ')
         if split_user_input[1].lower() == 'list' and len(split_user_input) == 2:
@@ -32,6 +33,7 @@ if __name__ == '__main__':
         else:
             print("- unknown Command! Try Again...")
             continue
+
         file = open("command.txt", "w")
         file.write(user_input)
         file.close()

@@ -9,25 +9,27 @@ import os
 class NetWolf:
 
     ENCODING = 'utf-8'
+    MESSAGE_LENGTH_SIZE = 64
     peers_count = 0
     timer_dic = {}
 
     def __init__(self, name, udp_port):
 
-        self.address = socket.gethostbyname(socket.gethostname())
         self.name = name
+        self.address = socket.gethostbyname(socket.gethostname())
         self.udp_port = udp_port
         self.tcp_port = random.randint(5000,7430)
+        self.wait_for_response_interval = 2
+        self.maximum_request_to_respond = 4
         self.response_list = []
+        self.get_history = []
 
         NetWolf.peers_count += 1
 
         threading.Thread(target=self.UDP_server, args=()).start()
         threading.Thread(target=self.TCP_server, args=()).start()
-        time.sleep(0.25)
+        time.sleep(0.35)
         threading.Thread(target=self.UDP_client, args=()).start()
-        threading.Thread(target=self.TCP_client, args=()).start()
-
 
 
     def UDP_server(self):
@@ -53,8 +55,10 @@ class NetWolf:
                 if split_data[1] in files_in_folder:
                     index = len(NetWolf.timer_dic) + 1
                     start_time = time.time()
+                    if not split_data[2] in self.get_history:
+                        time.sleep(round(random.uniform(0.5, 1), 2))
                     NetWolf.timer_dic.update({str(index) : str(start_time)})
-                    msg = "{} YES {}".format(self.name, str(index))
+                    msg = "{} {} {}".format(self.name, self.tcp_port, str(index))
                     server.sendto(msg.encode(self.ENCODING), address)
 
 
@@ -63,26 +67,27 @@ class NetWolf:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind(HOST_INFORMATION)
         print("[TCP SERVER {} STARTS]".format(self.name))
-
-        server.listen()
+        server.listen(5)
         while True:
             conn, address = server.accept()
-            threading.Thread(target=self.handle_client, args=(conn, address,))
+            threading.Thread(target=self.handle_client, args=(conn, address)).start()
 
 
-    def handle_client(self, conn, address):
-        print("[NEW CONNECTION] Connected from {}".format(address))
-        Connected = True
+    def handle_client(self, connection, address):
 
-        while Connected:
+        print("[SERVER {}] NEW CONNECTION FROM {}".format(self.name, address))
+        name = connection.recv(1024).decode(self.ENCODING)
+        filename = self.name + "//" + name
+        f = open(filename, 'rb')
+        l = f.read(1024)
+        while l:
+            connection.send(l)
+            # print('Sent ', repr(l))
+            l = f.read(1024 * 1000)
+        f.close()
+        connection.close()
+        print('Done sending')
 
-            message_length = int(conn.recv(MESSAGE_LENGTH_SIZE).decode(ENCODING))
-            msg = conn.recv(message_length).decode(self.ENCODING)
-            print("[MESSAGE RECEIVED] {}".format(msg))
-            if msg == "DISCONNECTED!":
-                Connected = False
-
-        conn.close()
 
     def UDP_client(self):
         threading.Thread(target=self.UDP_discovery, args=()).start()
@@ -164,7 +169,7 @@ class NetWolf:
 
                     SERVER_INFORMATION = (self.address, port)
                     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    msg = split_command[1] + " " + split_command[2]
+                    msg = split_command[1] + " " + split_command[2] + " " + split_command[0]
                     msg = msg.encode(self.ENCODING)
                     t = threading.Thread(target=self.client_receive_GET_response, args=(client, msg, SERVER_INFORMATION, ))
                     thread_list.append(t)
@@ -178,7 +183,7 @@ class NetWolf:
                 if len(self.response_list) == 0:
                     print("Could Not Find Requested File!")
                 else:
-                    minimum_delay = 2
+                    minimum_delay = self.wait_for_response_interval
                     print("Responses:")
                     for response in self.response_list:
                         print("\t" + response)
@@ -187,13 +192,17 @@ class NetWolf:
                             minimum_delay = float(split_response[4])
                             best_response = response
 
-                print("best response = " + best_response)
+                print("\tbest response = " + best_response)
 
                 self.response_list.clear()
                 thread_list.clear()
                 functions.delete_command_file()
+                best_response_split = best_response.split()
+                tcp_port = int(best_response_split[1])
+                self.get_history.append(best_response_split[0])
+                file_name = split_command[2]
 
-                # TODO: implement TCP file sharing
+                threading.Thread(target=self.TCP_client, args=(tcp_port, file_name,)).start()
 
 
     def client_receive_GET_response(self, client, msg, SERVER_INFORMATION):
@@ -219,3 +228,22 @@ class NetWolf:
         except socket.timeout:
             # print("UDP CLIENT {}: GOT NO RESPONSE".format(self.name))
             client.close()
+
+
+    def TCP_client(self, port, file_name):
+        SERVER_INFORMATION = (self.address, port)
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect(SERVER_INFORMATION)
+        client.send(file_name.encode(self.ENCODING))
+        with open(self.name + "//" + file_name, 'wb') as f:
+            # print('file opened')
+            while True:
+                # print('receiving data...')
+                data = client.recv(1024 * 1000)
+                # print('data=%s', data)
+                if not data:
+                    break
+                f.write(data)
+        f.close()
+        print('Successfully received the file')
+        client.close()
