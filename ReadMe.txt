@@ -5,5 +5,3 @@
 	must be continious , not in seperate lines. you can comment prints in code to easily enter commands.
 
 - commands are not case sensetive.
-	
-- .هیچ کدام از قسمت های امتیازی پیاده سازی نشده ولی خود پروژه به درستی پیاده سازی شده
