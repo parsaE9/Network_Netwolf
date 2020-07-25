@@ -1,3 +1,14 @@
+import time
+
+
+RED   = "\033[1;31m"
+BLUE  = "\033[1;34m"
+CYAN  = "\033[1;36m"
+GREEN = "\033[0;32m"
+RESET = "\033[0;0m"
+BOLD    = "\033[;1m"
+REVERSE = "\033[;7m"
+
 def remove_empty_lines(file_name):
     fh = open(file_name)
     lines = fh.readlines()
@@ -12,7 +23,6 @@ def remove_empty_lines(file_name):
 
 
 def merge_discovery_msg(name, udp_port, data, address):
-    # print("[UDP SERVER {} ] DATA : {} \t RECEIVED FROM : {}".format(name, data, address))
 
     name_index = data.replace(':', 'X', 1).find(':')
     port_index = data.replace(':', 'X', 2).find(':')
@@ -26,7 +36,6 @@ def merge_discovery_msg(name, udp_port, data, address):
     discovery_list = file.read()
     file.close()
 
-    # print("[SERVER {}] SENDER INFO : {}".format(name, sender_info))
 
     if sender_info not in discovery_list:
 
@@ -49,17 +58,42 @@ def merge_discovery_msg(name, udp_port, data, address):
     remove_empty_lines(file_name)
 
 
-def print_node_list(name):
+def UDP_list(name):
     file = open(name + "//" + name + "_list.txt")
     node_list = file.read()
     file.close()
-    delete_command_file()
-    print(node_list)
+    print(BLUE + node_list)
 
 
-def delete_command_file():
-    file = open("command.txt", "r+")
+def delete_command_file(name):
+    file = open(name + "//command.txt", "r+")
     file.seek(0)
     file.truncate()
     file.close()
 
+def get_user_input():
+    last_command = ''
+
+    while True:
+        time.sleep(1)
+        print(CYAN + "\n******************************************************************************************************"
+              "\n- Commands: \"list\"\t     \"GET\"\n- Example:  \"N1 list\"\t \"N2 GET sampleFile.txt\"")
+
+        user_input = input("- enter Command: ")
+        split_user_input = user_input.split(' ')
+        if split_user_input[1].lower() == 'list' and len(split_user_input) == 2:
+            user_input = split_user_input[0].upper() + " " + split_user_input[1].lower()
+        elif split_user_input[1].upper() == 'GET' and len(split_user_input) == 3:
+            user_input = split_user_input[0].upper() + " " + split_user_input[1].upper() + " " + split_user_input[2]
+        else:
+            print(RED + "- unknown Command! Try Again...")
+            continue
+
+        if last_command == split_user_input[0]:
+            time.sleep(1)
+
+        last_command = split_user_input[0]
+        file_name = split_user_input[0] + "//command.txt"
+        file = open(file_name, "w")
+        file.write(user_input)
+        file.close()
